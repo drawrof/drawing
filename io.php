@@ -23,7 +23,11 @@ if (empty($_POST['queue'])) {
 // Append the contents
 } else {
 	if (is_writable($directory)) {
-		$data = gzuncompress(file_get_contents($filename));
+		if (file_exists($filename)) {
+			$data = gzuncompress(file_get_contents($filename));
+		} else {
+			$data = '';
+		}
 		file_put_contents($filename,gzcompress($data.$_POST['queue'],9));
 	}
 }
