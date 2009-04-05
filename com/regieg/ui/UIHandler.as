@@ -31,7 +31,10 @@ package com.regieg.ui
 		private const NINE = 57;
 		private const SPACE = 32;
 		
-		private const S = 83;
+		private const HELP = 72;
+		private const SAVE = 83;
+		private const REFRESH = 82;
+		private const CLEAR = 67;
 		
 		private var brushes;
 		
@@ -64,7 +67,6 @@ package com.regieg.ui
 	   // listener funtion
 		public function key_pressed(ev:KeyboardEvent):void
 		{
-			trace(ev.keyCode);
 			switch (ev.keyCode)
 			{
 				// Brush Switcher
@@ -108,12 +110,24 @@ package com.regieg.ui
 					break;
 				
 				// Save, Refresh, Clear etc...
-				case S:
+				case SAVE:
 					root.io.save();
+					break;
+					
+				case REFRESH:
+					root.io.refresh();
+					break;
+					
+				case CLEAR:
+					root.io.clear();
 					break;
 								
 				case SPACE:
 					toggle_toolbar();
+					break;
+					
+				case HELP:
+					toggle_help();
 					break;
 			}
 			
@@ -128,12 +142,14 @@ package com.regieg.ui
 			reset_focus();
 		}
 	
-		public function toggle_toolbar()
+		public function toggle_toolbar(force_hide = false)
 		{ 		
-			if (root.toolbar.alpha == 0) {
-				Tweener.addTween(root.toolbar, {alpha: 1, time: 1});
+			if (root.toolbar.alpha == 0 && !force_hide) {
+				Tweener.addTween(root.toolbar, {alpha: 1, time: 0.5});
 			} else {
-				Tweener.addTween(root.toolbar, {alpha: 0, time: 2});
+				if (root.toolbar.alpha != 0) {
+					Tweener.addTween(root.toolbar, {alpha: 0, time: 1});
+				}
 			}
 			
 			reset_focus();
@@ -153,6 +169,9 @@ package com.regieg.ui
 			root.message.dynamic_text.x = (stage.stageWidth - root.message.dynamic_text.width) / 2;
 			root.message.dynamic_text.y = (stage.stageHeight - root.message.dynamic_text.height) / 2;
 			
+			// Help
+			root.help.x = (stage.stageWidth - root.help.width) / 2;
+			root.help.y = (stage.stageHeight - root.help.height) / 2;
 		}
 		
 		public function update_toolbar()
@@ -163,7 +182,7 @@ package com.regieg.ui
 			root.toolbar.brush.settings.text = size_text + ' ' + name_text + ' at ' + alpha_text;
 		}
 		
-		public function update_toolbar_z(e:Event):void
+		public function update_toolbar_z(e = null):void
 		{
 			stage.addChild(root.toolbar);
 		}		
@@ -195,52 +214,82 @@ package com.regieg.ui
 			}
 		}
 
-		public function change_brush(keycode:Number):void
+		public function change_brush(keycode):void
 		{
-			var changed = true;
+			var changed = false;
 			
+			root.brush.disable();
+							
 			// Save some properties
 			var previous_size = root.brush.size;
 			var previous_alpha = root.brush.alpha;
-			
-			// Destroy the old brush's event handlers
-			root.brush.disable();
-			
+
 			switch (keycode) 
 			{
 				case ONE:
-					root.brush = new Line(stage,root,root.colours);
+				case "Line":
+					changed = 'Line';
 				break;
 				
 				case TWO:
-					root.brush = new SimpleLine(stage,root,root.colours);
+				case "SimpleLine":
+					changed = 'SimpleLine';
 				break;
 				
 				case THREE:
-					root.brush = new BubbleLine(stage,root,root.colours);
+				case "BubbleLine":
+					changed = 'BubbleLine';
 				break;
-				default:
-					changed = false;
-				break
+				
+				case FOUR:
+				case "Bubbles":
+					changed = 'Bubbles';
+				break;
+				
+				case FIVE:
+				case "RoundBrush":
+					changed = 'RoundBrush';
+				break;
+				
+				case SIX:
+				case "SharpLine":
+					changed = 'SharpLine';
+				break;
+				
+				case SEVEN:
+				case "Dots":
+					changed = 'Dots';
+				break;
 			}
-			
-			// Update a few properties of the brush
+						
 			if (changed) {
+				
+				// Update a few properties of the brush
+				root.brush = root.brushes[changed];
 				root.brush.size = previous_size;
 				root.brush.alpha = previous_alpha;
+				root.brush.enable();
+				
+				// Update the toolbar
 				update_toolbar();
+				
+				// Save what just happend
+				root.io.add('cb:'+changed);
 			}
 		}
 		
 		public function show_message(message:String)
 		{
 			// Prevent the toolbar from coming back on top
-			stage.removeEventListener(MouseEvent.MOUSE_UP, update_toolbar_z); 
+			stage.removeEventListener(MouseEvent.MOUSE_UP, update_toolbar_z);
+			stage.removeEventListener(KeyboardEvent.KEY_UP, key_pressed); 
 			root.brush.disable();
 			
 			// Set the message, put it up top
 			root.message.dynamic_text.text = message;
 			stage.addChild(root.message);
+			
+			stage.addEventListener(Event.ADDED, keep_message_on_top);
 			
 			// Show it
 			Tweener.addTween(root.message, {alpha: 1, time: 1});
@@ -250,10 +299,32 @@ package com.regieg.ui
 		{
 			// Let the toolbar come back on top
 			stage.addEventListener(MouseEvent.MOUSE_UP, update_toolbar_z); 
+			stage.addEventListener(KeyboardEvent.KEY_UP, key_pressed);
 			root.brush.enable();
 			
+			stage.removeEventListener(Event.ADDED, keep_message_on_top);
+						
 			// Hide it
 			Tweener.addTween(root.message, {alpha: 0, time: 1, delay: 1});
+		}
+		
+		public function toggle_help()
+		{
+			
+			stage.addChild(root.help);
+			
+			if (root.help.alpha == 0) {
+				root.brush.disable();
+				Tweener.addTween(root.help, {alpha: 1, time: 0.5});
+			} else {
+				root.brush.enable();
+				Tweener.addTween(root.help, {alpha: 0, time: 1});
+			}
+		}
+		
+		public function keep_message_on_top(e)
+		{
+			stage.addChild(root.message);
 		}
 				
 		public function reset_focus()

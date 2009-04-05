@@ -10,7 +10,7 @@ package com.regieg.brushes
 		public function BubbleLine(_stage,_root,_palette):void
 		{
 			super(_stage,_root,_palette);
-			name = 'Bubble Line';
+			name = 'BubbleLine';
 		}
 		
 		override public function init_filters():Array
@@ -29,7 +29,7 @@ package com.regieg.brushes
 		{	
 			if (is_first) {
 				// Move to current mouse position
-				canvas.graphics.moveTo(e.stageX,e.stageY);
+				moveTo(e.stageX,e.stageY);
 				is_first = false;
 			}	
 			

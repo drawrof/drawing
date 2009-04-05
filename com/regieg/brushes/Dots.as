@@ -5,12 +5,12 @@ package com.regieg.brushes
     import flash.events.MouseEvent;
 	import flash.filters.*;
     
-	public class SimpleLine extends Line
+	public class Dots extends Line
 	{		
-		public function SimpleLine(_stage,_root,_palette):void
+		public function Dots(_stage,_root,_palette):void
 		{
 			super(_stage,_root,_palette);
-			name = 'SimpleLine';
+			name = 'Dots';
 		}
 		
 		override public function init_filters():Array
@@ -27,15 +27,11 @@ package com.regieg.brushes
 		
 		override public function draw_line(e:MouseEvent):void
 		{	
-			if (is_first) {
-				// Move to current mouse position
-				moveTo(e.stageX,e.stageY);
-				is_first = false;
-			}	
-						
+			moveTo(e.stageX + 1,e.stageY + 1);
+			
 			// Reset the linestyle
-			lineStyle(random(size), palette[random(palette_max,true)],alpha);
-			curveTo(e.stageX,e.stageY,e.stageX + random(curve),e.stageY + random(curve));
+			lineStyle(random(size), palette[random(palette_max,true)],alpha,true,'normal','round',null,0);
+			lineTo(e.stageX,e.stageY);
 			
 			e.updateAfterEvent();
 		}

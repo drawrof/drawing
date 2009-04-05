@@ -5,7 +5,7 @@
 * curveTo: 		'ct:controlx,controly,anchorx,anchory'
 * lineStyle: 	'ls:size,colour,alpha'
 * drawCircle:	'dc:x,y,radius'
-*
+* changeBrush:	'cb:brush_name'
 *
 *
 *
@@ -17,7 +17,8 @@ package com.regieg.brushes
     import flash.display.Stage;
     import flash.events.MouseEvent;
 	import flash.filters.*;
-    
+	import flash.utils.getDefinitionByName;
+
 	public class Line
 	{
 		public var is_first = true;
@@ -41,8 +42,6 @@ package com.regieg.brushes
 			palette = _palette;
 			filters = init_filters();
 			palette_max = _palette.length;
-			
-			enable();
 		}
 		
 		public function enable()
@@ -58,14 +57,9 @@ package com.regieg.brushes
 		}
 		
 		public function start_drawing(e:MouseEvent):void
-		{
-			// Initialize a new canvas object
-			canvas = new Sprite();
-			stage.addChild(canvas);
-			
-			// Add Filters
-			canvas.filters = filters;
-			
+		{		
+			add_canvas();
+			change_palette(root.colours);			
 			stage.addEventListener(MouseEvent.MOUSE_MOVE, draw_line);
 		}
 		
@@ -79,26 +73,43 @@ package com.regieg.brushes
 		{
 			return new Array();
 		}
+		
+		public function add_canvas()
+		{
+			// Initialize a new canvas object
+			canvas = new Sprite();
+			stage.addChild(canvas);
+			
+			// Add Filters
+			canvas.filters = filters;
+			root.io.add('ac:null');
+		}
 				
-		public function moveTo(x,y)
+		public function moveTo(x:Number,y:Number)
 		{
 			canvas.graphics.moveTo(x,y);
 			root.io.add('mt:'+x+','+y);
 		}
 		
-		public function lineStyle(size, colour, alpha, hinting = false, scale = 'normal', caps = null, joints = null, miter = 3)
+		public function lineStyle(size:Number, colour:Number, alpha:Number, hinting:Boolean = false, scale:String = 'normal', caps:String = null, joints:String = null, miter:Number = 3)
 		{
 			canvas.graphics.lineStyle(size,colour,alpha,hinting,scale,caps,joints,miter);
 			root.io.add('ls:'+size+ ',' +colour+ ',' +alpha+ ',' +hinting+ ',' +scale+ ',' +caps+ ',' +joints+ ',' +miter);
 		}
 		
-		public function curveTo(controlX,controlY,anchorX,anchorY)
+		public function curveTo(controlX:Number,controlY:Number,anchorX:Number,anchorY:Number)
 		{
 			canvas.graphics.curveTo(controlX,controlY,anchorX,anchorY);
 			root.io.add('ct:'+controlX+','+controlY+','+anchorX+','+anchorY)
 		}
 		
-		public function drawCircle(x,y,radius)
+		public function lineTo(x:Number,y:Number)
+		{
+			canvas.graphics.lineTo(x,y);
+			root.io.add('lt:'+x+','+y);
+		}
+				
+		public function drawCircle(x:Number,y:Number,radius:Number)
 		{
 			canvas.graphics.drawCircle(x,y,radius);
 			root.io.add('dc:'+x+','+y+','+radius)

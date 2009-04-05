@@ -5,12 +5,12 @@ package com.regieg.brushes
     import flash.events.MouseEvent;
 	import flash.filters.*;
     
-	public class SimpleLine extends Line
+	public class SharpLine extends Line
 	{		
-		public function SimpleLine(_stage,_root,_palette):void
+		public function SharpLine(_stage,_root,_palette):void
 		{
 			super(_stage,_root,_palette);
-			name = 'SimpleLine';
+			name = 'SharpLine';
 		}
 		
 		override public function init_filters():Array
@@ -34,7 +34,7 @@ package com.regieg.brushes
 			}	
 						
 			// Reset the linestyle
-			lineStyle(random(size), palette[random(palette_max,true)],alpha);
+			lineStyle(random(size), palette[random(palette_max,true)],alpha,true,'normal','none');
 			curveTo(e.stageX,e.stageY,e.stageX + random(curve),e.stageY + random(curve));
 			
 			e.updateAfterEvent();
